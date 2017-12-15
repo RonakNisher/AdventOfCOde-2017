@@ -63,36 +63,16 @@ int main()
     long genA;
     long genB;
     
-    string genAStr;
-    string genBStr;
-    
     int count = 0;
     
     long long end = 40000000;
     
-    cout<<end<<endl;
-    
     for (long i = 0; i <= end ;i++) 
     {
-        if (i%10000000 == 0)
-            cout<<"i is "<<i<<endl;
-        // cout<<i<<endl;
         genA = (genAStart * 16807) % 2147483647;
         genB = (genBStart * 48271) % 2147483647;
         
-        // std::cout << genA << " "<<genB << std::endl;
-        
-        genAStr = std::bitset<32>(genA).to_string(); //to binary
-        genBStr = std::bitset<32>(genB).to_string(); //to binary
-        
-        // cout<<genAStr<<endl;
-        // cout<<genBStr<<endl;
-        
-        // cout<<genAStr.substr(16)<<endl;
-        
-        // break;
-
-        if (genAStr.substr(16) == genBStr.substr(16))
+        if ((genA&0xFFFF) == (genB&0xFFFF))
             count++;
             
         genAStart = genA;
@@ -100,12 +80,6 @@ int main()
     }
     
     cout << count<<endl;
-    // std::string binary = std::bitset<8>(128).to_string(); //to binary
-
-    
-    
-    
-    
     
     return 0;
 }
