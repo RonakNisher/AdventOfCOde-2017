@@ -114,10 +114,28 @@ string GetKnotHash(vector<int>& workingList, vector<int>& input)
     }
     std::string result( stream.str() );
     
-    cout<<"res is "<<result<<endl;
+    // cout<<"res is "<<result<<endl;
     
     return result;
 
+}
+
+void floodfill(int row, int col, int (&regionGrid)[128][128], int currentGrp)
+{
+    if (row < 0 || row > 127 || col < 0 || col > 127)
+        return;
+        
+    if (regionGrid[row][col] != -1)
+        return;
+        
+    regionGrid[row][col] = currentGrp;
+    
+    floodfill(row-1, col, regionGrid, currentGrp); // top
+    floodfill(row+1, col, regionGrid, currentGrp); // bottom
+    floodfill(row, col - 1, regionGrid, currentGrp); // left
+    floodfill(row, col + 1, regionGrid, currentGrp); //right
+    
+    return;
 }
 
 int main()
@@ -126,40 +144,108 @@ int main()
     
     vector<int> workingList;
     vector<int> input;
-
     
-    ifstream myfile ("input.txt");
-    if (myfile.is_open())
+    // line = "flqrgnkx";
+    line = "amgozmfv";
+
+    string res;
+    bool grid[128][128] = {0};
+    int regionGrid[128][128] = {0};
+    int count;
+    
+    for (int i = 0; i < 128; i++) 
     {
-        vector<string> words;
-        while ( getline (myfile,line) )
+        input.clear();
+        workingList.clear();
+        for (auto ch : line) 
         {
-            input.reserve(line.size() + 5);
-            for (auto ch : line) 
-            {
-                input.push_back(int(ch));
-            }
+            input.push_back(int(ch));
         }
         
-        myfile.close();
+        input.push_back(int('-'));
         
+        for (auto num : to_string(i)) 
+        {
+            input.push_back(int(num));
+        }
+            
         input.push_back(17);
         input.push_back(31);
         input.push_back(73);
         input.push_back(47);
         input.push_back(23);
         
-        cout<<"input "<<endl;
-        print(input);
-
+        // cout<<"input "<<endl;
+        // print(input);
+    
         
         for (int i = 0; i < size; i++) 
         {
             workingList.push_back(i);
         }
         
-        GetKnotHash(workingList, input);
+        res = GetKnotHash(workingList, input);
+        
+         // convert to bits
+         for (int j = 0; j < 32; j++) 
+         {
+             string ch = {res[j]};
+             long n = strtol(ch.c_str(), nullptr, 16);
+             
+             grid[i][j*4]     = n & 0x8;
+             grid[i][j*4 + 1] = n & 0x4;
+             grid[i][j*4 + 2] = n & 0x2;
+             grid[i][j*4 + 3] = n & 0x1;
+             
+            //  cout<<res[j]<<" "<<n<<" "<<grid[i][j*4]<<" "<<grid[i][j*4 + 1]<<" "<<grid[i][j*4 + 2]<<" "<<grid[i][j*4 + 3]<<endl;;
+             
+             count += (grid[i][j*4] + grid[i][j*4 + 1] + grid[i][j*4 + 2] + grid[i][j*4 + 3]);
+         }
+         
+        //  break;
     }
+    cout << "count of 1's is "<<count<<endl;
+    
+    // start part 2
+    
+    for (int i = 0; i < 128; i++) 
+    {
+        for (int j = 0; j < 128; j++) 
+        {
+            if (grid[i][j] == 1)
+                regionGrid[i][j] = -1;
+        }
+    }
+    
+    int currentGrp = 1;
+    
+    
+    // for the rest of the columns in the grid, look at the top as well as the left to decide
+    for (int column = 0; column < 128; column++) 
+    {
+        // rest of the rows
+        for (int row = 0; row < 128; row++) 
+        {
+            if (regionGrid[row][column] == -1)
+            {
+                floodfill(row, column, regionGrid, currentGrp);
+                currentGrp++;
+            }
+        }
+    }
+    
+    cout<<"no of connected regions is "<<currentGrp-1<<endl;
+    
+    // for (int i = 0; i < 128; i++) 
+    // {
+    //     for (int j = 0; j < 60; j++) 
+    //     {
+    //         cout<<setw(3)<<regionGrid[i][j]<<" ";
+    //     }
+    //     cout<<endl;
+    //     cout<<endl;
+    // }
+    
     
     return 0;
 }

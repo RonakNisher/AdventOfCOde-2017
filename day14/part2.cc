@@ -144,9 +144,12 @@ int main()
     //     myfile.close();
     // }
     
-    line = "amgozmfv";
+    line = "flqrgnkx";
+    // line = "amgozmfv";
+
     string res;
     bool grid[128][128] = {0};
+    int regionGrid[128][128] = {0};
     int count;
     
     for (int i = 0; i < 128; i++) 
@@ -200,18 +203,142 @@ int main()
          
         //  break;
     }
+    cout << "count of 1's is "<<count<<endl;
+    
+    // start part 2
+    
+    for (int i = 0; i < 128; i++) 
+    {
+        for (int j = 0; j < 128; j++) 
+        {
+            if (grid[i][j] == 1)
+                regionGrid[i][j] = 1;
+        }
+    }
+    
+    int currentGrp = 2;
+    
+    // loop through the 1st column
+    
+    if (regionGrid[0][0] == 1)
+    {
+        regionGrid[0][0] = currentGrp;
+        currentGrp++;
+    }
+    
+    // see only top to see if connected
+    for (int i = 1; i < 128; i++) 
+    {
+        if (regionGrid[i][0] == 1)
+        {
+            if (regionGrid[i-1][0] != 0)
+            {
+                regionGrid[i][0] = regionGrid[i-1][0];
+            }
+            else
+            {
+                regionGrid[i][0] = currentGrp;
+                currentGrp++;
+                // cout<<"New group at "<<i<<" "<<0<<" for new region "<<currentGrp<<endl;
+            }
+        }
+    }
+    
+    int lastMismatch;
+    int currentMismatch;
+    
+    // for the rest of the columns in the grid, look at the top as well as the left to decide
+    for (int column = 1; column < 128; column++) 
+    {
+        // if (column == 3)
+        //     break;
+        lastMismatch = 0;
+        currentMismatch = 0;
+        // row 0
+        if (regionGrid[0][column] == 1)
+        {
+            if (regionGrid[0][column - 1] != 0)
+            {
+                regionGrid[0][column] = regionGrid[0][column - 1];
+            }
+            else
+            {
+                regionGrid[0][column] = currentGrp;
+                currentGrp++;
+                // cout<<"New group at "<<0<<" "<<column<<" for new region "<<currentGrp<<endl;
+            }
+        }
+        
+        // rest of the rows
+        for (int row = 1; row < 128; row++) 
+        {
+            if (regionGrid[row][column] == 1)
+            {
+                int left = regionGrid[row][column - 1];
+                int top = regionGrid[row - 1][column];
+                
+                if (regionGrid[row][column - 1] != 0 && regionGrid[row - 1][column] != 0) // connected to both
+                {
+                    if (left == top)
+                    {
+                        regionGrid[row][column] = left;
+                        lastMismatch = 0;
+                    }
+                    else
+                    {
+                        if (left < top)
+                        {
+                            regionGrid[row][column] = left;
+                            regionGrid[row - 1][column] = left;
+                            currentMismatch = left; // lower no
+                        }
+                        else
+                        {
+                            regionGrid[row][column] = top;
+                            regionGrid[row][column - 1] = top;
+                            currentMismatch = top; // lower no
+                        }
+                        
+                        if (lastMismatch != currentMismatch)
+                        {
+                            currentGrp--; // because we found a new connected region
+                            // cout<<"Mismatch at "<<" current pos "<<row<<" "<<column<<" "<<lastMismatch<<" "<<currentMismatch<<" new grpNo "<<currentGrp<<endl;
+                            lastMismatch = currentMismatch;
+                        }
+                    }
+                }
+                else if (left != 0) // connected to left
+                {
+                    regionGrid[row][column] = left;
+                }
+                else if (top != 0) // connected to top
+                {
+                    regionGrid[row][column] = top;
+                }
+                else // separate region
+                {
+                    regionGrid[row][column] = currentGrp;
+                    currentGrp++;
+                    lastMismatch = 0;
+                    // currentMismatch = 0;
+                    // cout<<"New group at "<<row<<" "<<column<<" for new region "<<currentGrp<<endl;
+                }
+            }
+        }
+    }
+    
+    cout<<"no of connected regions is "<<currentGrp-1<<endl;
     
     // for (int i = 0; i < 128; i++) 
     // {
-    //     for (int j = 0; j < 128; j++) 
+    //     for (int j = 0; j < 60; j++) 
     //     {
-    //         cout<<grid[i][j]<<" ";
+    //         cout<<setw(3)<<regionGrid[i][j]<<" ";
     //     }
     //     cout<<endl;
     //     cout<<endl;
     // }
     
-    cout << "count is "<<count<<endl;
     
     return 0;
 }
